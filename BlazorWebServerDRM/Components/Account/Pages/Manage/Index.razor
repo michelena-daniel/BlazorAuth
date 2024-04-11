@@ -28,6 +28,11 @@
                 <label for="phone-number" class="form-label">Phone number</label>
                 <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
             </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Country" class="form-control" placeholder="Please enter your country." />
+                <label for="phone-number" class="form-label">Country</label>
+                <ValidationMessage For="() => Input.Country" class="text-danger" />
+            </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </EditForm>
     </div>
@@ -37,6 +42,7 @@
     private ApplicationUser user = default!;
     private string? username;
     private string? phoneNumber;
+    private string? country;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -55,13 +61,12 @@
 
     private async Task OnValidSubmitAsync()
     {
-        if (Input.PhoneNumber != phoneNumber)
+        user.PhoneNumber = Input.PhoneNumber;
+        user.Country = Input.Country;
+        var updateResult = await UserManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
         {
-            var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-            if (!setPhoneResult.Succeeded)
-            {
-                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
-            }
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
         }
 
         await SignInManager.RefreshSignInAsync(user);
@@ -73,5 +78,8 @@
         [Phone]
         [Display(Name = "Phone number")]
         public string? PhoneNumber { get; set; }
+
+        [Display(Name = "Country")]
+        public string? Country { get; set; }
     }
 }
